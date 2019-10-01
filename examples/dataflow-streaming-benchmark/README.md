@@ -74,21 +74,24 @@ Pub/Sub topic.
 
 ### Executing the Pipeline
 ```bash
+# Change to project directory
+cd examples/dataflow-streaming-benchmark/
+
+#Set authetication
+export GOOGLE_APPLICATION_CREDENTIALS="/Users/khanz/dataflow-learning-01bcff791ed1.json"
+
 # Set the pipeline vars
-PROJECT_ID=<project-id>
-BUCKET=<bucket>
+PROJECT_ID=dataflow-learning-khanz
+BUCKET=dataflow-learning-khanz
 PIPELINE_FOLDER=gs://${BUCKET}/dataflow/pipelines/streaming-benchmark
-SCHEMA_LOCATION=gs://<path-to-schema-location-in-gcs>
-PUBSUB_TOPIC=projects/$PROJECT_ID/topics/<topic-id>
-
-# Set the desired QPS
-QPS=50000
-
-# Set the runner
+SCHEMA_LOCATION=gs://dataflow-learning-khanz/schema.json
+PUBSUB_TOPIC=projects/$PROJECT_ID/topics/test-topic
+QPS=5
 RUNNER=DataflowRunner
+ZONE=us-west1-a
 
-# Compute engine zone
-ZONE=us-east1-d
+#Create a pub/sub topic
+gcloud pubsub topics create $PUBSUB_TOPIC
 
 # Build the template
 mvn compile exec:java \
@@ -105,4 +108,10 @@ mvn compile exec:java \
     --qps=${QPS} \
     --schemaLocation=${SCHEMA_LOCATION} \
     --topic=${PUBSUB_TOPIC}"
+
+# Create a Subscription
+gcloud pubsub subscriptions create test-sub --topic=$PUBSUB_TOPIC --topic-project=$PROJECT_ID
+
+#Check messages from the pub/sub
+gcloud pubsub subscriptions pull --auto-ack projects/dataflow-learning-khanz/subscriptions/test-sub
 ```
